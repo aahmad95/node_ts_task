@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "jest --runInBand --detectOpenHandles --forceExit",
+    "test": "jest --config ./jest.config.js --runInBand --detectOpenHandles --forceExit",
     "start": "npx tsc && node ./dist/index.js"
   },
   "keywords": [],
