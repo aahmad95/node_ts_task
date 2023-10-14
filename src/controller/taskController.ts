@@ -1,23 +1,17 @@
 import { Response, Request } from "express";
-import { validationResult } from "express-validator";
-import { task } from "../types/taskTypes";
+import { Task } from "../types/taskTypes";
 import { fetchTaskById, fetchTasks, getTasksByCategory, getTasksByUsername, insertTask, modifyTask, removeTask } from '../utils/task';
 
 export const createTask = async (req: Request, res: Response) => {
   try {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res
-        .status(400)
-        .json({ msg: "Invalid Input Data", error: errors.array() });
-    }
-
-    const create = insertTask(req.body as task);
-    if (!!create) {
+    const { body } = req;
+    const create = insertTask(body as Task);
+    if (create) {
       return res.status(200).json({
         msg: "Task created successfully",
       });
     }
+
     return res.status(500).json({
       msg: "Something went wrong",
     });
@@ -57,23 +51,18 @@ export const getAllTasks = async (req: Request, res: Response) => {
 
 export const getTaskById = async (req: Request, res: Response) => {
   try {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res
-        .status(400)
-        .json({ msg: "Invalid Input Data", errors: errors.array() });
-    }
-
     const { id } = req.params;
-    let task = fetchTaskById(parseInt(id));
-    if (task.length === 0) {
+    
+    const getTask = fetchTaskById(parseInt(id));
+    
+    if (getTask.length === 0) {
       return res
         .status(404)
-        .json({ msg: "Requested Task is not present in the table." });
+        .json({ msg: "Requested Task is not present in the table.", data: [] });
     } else {
       return res
         .status(200)
-        .json({ msg: "Task successfully retrieved.", data: task });
+        .json({ msg: "Task successfully retrieved.", data: getTask });
     }
   } catch (err) {
     return res.status(500).json({ msg: "Something went wrong", error: err });
@@ -82,13 +71,6 @@ export const getTaskById = async (req: Request, res: Response) => {
 
 export const deleteTask = async (req: Request, res: Response) => {
   try {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res
-        .status(400)
-        .json({ msg: "Invalid Input Data", data: [], errors: errors.array() });
-    }
-
     const id = parseInt(req.params.id);
 
     const task = removeTask(id);
@@ -106,20 +88,13 @@ export const deleteTask = async (req: Request, res: Response) => {
       //
       return res
         .status(500)
-        .json({ msg: "Something went wrong", data: [], errors: [] });
+        .json({ msg: "Something went wrong"});
     }
   }
 };
 
 export const updateTask = async (req: Request, res: Response) => {
   try {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res
-        .status(400)
-        .json({ msg: "Invalid Input Data", error: errors.array() });
-    }
-
     const {
       params: { id },
       body,
@@ -127,7 +102,8 @@ export const updateTask = async (req: Request, res: Response) => {
 
     const parseId = parseInt(id);
 
-    let update = modifyTask(parseId, body);
+    const update = modifyTask(parseId, body);
+
     if (update) {
       return res.status(200).json({
         msg: "Task updated successfully",
